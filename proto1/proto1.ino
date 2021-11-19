@@ -1,6 +1,6 @@
 #include "IRremote.h"
 
-#define ENABLE 5  //dc motor pins
+#define ENABLE 5  //dc motor driver pins
 #define DIRA 3
 #define DIRB 4
 
@@ -13,7 +13,7 @@ void setup()
   pinMode(ENABLE, OUTPUT);
   pinMode(DIRA, OUTPUT);
   pinMode(DIRB, OUTPUT);
-  pinMode(9, OUTPUT);
+  pinMode(9, OUTPUT); //transistor pin
   IrReceiver.begin(receiver, ENABLE_LED_FEEDBACK); // Start the receiver
 }
 
@@ -23,12 +23,12 @@ void loop()
   {
     if (IrReceiver.decodedIRData.decodedRawData == 3108437760) {  //vol+ button, uses raw value instead of hex
       Serial.println("up");
-      //digitalWrite(DIRA, LOW);
+      //digitalWrite(DIRA, LOW);  //motor driver
       //digitalWrite(DIRB, HIGH);
       //digitalWrite(ENABLE, 255);
       //delay(1500);
       //digitalWrite(ENABLE, LOW);
-      digitalWrite(9, HIGH);
+      digitalWrite(9, HIGH);  //transistor
       delay(1000);
       digitalWrite(9, LOW);
     }
