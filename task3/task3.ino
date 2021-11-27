@@ -14,7 +14,7 @@ Servo turnServo = Servo();
 int leftReading = 0;
 int rightReading = 0;
 int blackThreshold = 600;
-int timeStep = -100;
+int timeStep = 0;
 boolean turnFlag = false;
 int zeroAngle = 90;
 int turnAngle = 30;
@@ -52,40 +52,31 @@ void loop()
   if (go) {
     int mil = millis();
 
-    if (leftReading >= blackThreshold && rightReading  >= blackThreshold && (mil - timeStep) > 550) {
-      if (numberOfGates == 4)
-        go = false;
-
-      digitalWrite(LED1, LOW);
-      digitalWrite(LED2, LOW);
+    if (leftReading >= blackThreshold && numberOfGates == 0) {
+      alreadyTurning = true;
       timeStep = mil;
-      if (!alreadyTurning) {
-        alreadyTurning = true;
-        if (numberOfGates == 0)
-          turnWheel(-1);
-        else if (numberOfGates == 2)
-          turnWheel(1);
-      } else {
-        alreadyTurning = false;
-        if (numberOfGates == 1)
-          turnWheel(1);
-        else if (numberOfGates == 3)
-          turnWheel(-1);
-      }
+      turnWheel(1);
       numberOfGates++;
-
-
-    } else if (leftReading <= blackThreshold && rightReading  <= blackThreshold) {
-      digitalWrite(LED1, HIGH);
-      digitalWrite(LED2, HIGH);
-      turnFlag = false;
-
+    } else if (alreadyTurning && (mil - timeStep) > 1800  && numberOfGates == 1) {
+      turnWheel(-1);
+      numberOfGates++;
+      timeStep = mil;
+    } else if (alreadyTurning && (mil - timeStep) > 100  && numberOfGates == 2) {
+      timeStep = mil;
+      numberOfGates++;
+      turnWheel(-1);
+    } else if (alreadyTurning && (mil - timeStep) > 2800  && numberOfGates == 3) {
+      timeStep = mil;
+      numberOfGates++;
+      turnWheel(1);
+    } else if (alreadyTurning && (mil - timeStep) > 1500  && numberOfGates == 4) {
+      go = false;
     }
 
     digitalWrite(9, HIGH);
-    delay(20);
+    delay(10);
     digitalWrite(9, LOW);
-    delay(2);
+    delay(1);
 
   }
   if (IrReceiver.decode()) // have we received an IR signal?
@@ -116,14 +107,12 @@ void loop()
       turnWheel(1);
     } else if (IrReceiver.decodedIRData.decodedRawData == 4161273600) { // Down key
       turnWheel(-1);
-    } else if (IrReceiver.decodedIRData.decodedRawData == 0xAD52FF00) {
+    }  else if (IrReceiver.decodedIRData.decodedRawData == 0xAD52FF00) {
       numberOfGates == 0;
       alreadyTurning = false;
       turnFlag = false;
       timeStep = -100;
     }
-
-
     IrReceiver.resume();
   }
 

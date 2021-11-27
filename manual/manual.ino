@@ -14,7 +14,7 @@ Servo turnServo = Servo();
 int leftReading = 0;
 int rightReading = 0;
 int blackThreshold = 600;
-int timeStep = -100;
+int timeStep = 0;
 boolean turnFlag = false;
 int zeroAngle = 90;
 int turnAngle = 30;
@@ -44,58 +44,13 @@ void setup()
 
 void loop()
 {
-  leftReading = analogRead(LDR1);
-  rightReading = analogRead(LDR2);
-  Serial.print(leftReading);
-  Serial.print(",");
-  Serial.println(rightReading);
-  if (go) {
-    int mil = millis();
-
-    if (leftReading >= blackThreshold && rightReading  >= blackThreshold && (mil - timeStep) > 550) {
-      if (numberOfGates == 4)
-        go = false;
-
-      digitalWrite(LED1, LOW);
-      digitalWrite(LED2, LOW);
-      timeStep = mil;
-      if (!alreadyTurning) {
-        alreadyTurning = true;
-        if (numberOfGates == 0)
-          turnWheel(-1);
-        else if (numberOfGates == 2)
-          turnWheel(1);
-      } else {
-        alreadyTurning = false;
-        if (numberOfGates == 1)
-          turnWheel(1);
-        else if (numberOfGates == 3)
-          turnWheel(-1);
-      }
-      numberOfGates++;
-
-
-    } else if (leftReading <= blackThreshold && rightReading  <= blackThreshold) {
-      digitalWrite(LED1, HIGH);
-      digitalWrite(LED2, HIGH);
-      turnFlag = false;
-
-    }
-
-    digitalWrite(9, HIGH);
-    delay(20);
-    digitalWrite(9, LOW);
-    delay(2);
-
-  }
   if (IrReceiver.decode()) // have we received an IR signal?
   {
     if (IrReceiver.decodedIRData.decodedRawData == 3108437760) {  //vol+ button, uses raw value instead of hex
       Serial.println("up");
-      //      digitalWrite(9, HIGH);  //transistor
-      //      delay(2900); //
-      //      digitalWrite(9, LOW);
-      go = true;
+      digitalWrite(9, HIGH);
+      delay(750);
+      digitalWrite(9, LOW);
     }
     else if (IrReceiver.decodedIRData.decodedRawData == 3927310080) { //vol- button
       Serial.println("down");
@@ -116,14 +71,12 @@ void loop()
       turnWheel(1);
     } else if (IrReceiver.decodedIRData.decodedRawData == 4161273600) { // Down key
       turnWheel(-1);
-    } else if (IrReceiver.decodedIRData.decodedRawData == 0xAD52FF00) {
+    }  else if (IrReceiver.decodedIRData.decodedRawData == 0xAD52FF00) {
       numberOfGates == 0;
       alreadyTurning = false;
       turnFlag = false;
       timeStep = -100;
     }
-
-
     IrReceiver.resume();
   }
 

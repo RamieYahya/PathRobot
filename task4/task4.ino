@@ -44,34 +44,35 @@ void setup()
 
 void loop()
 {
-  if (go) {
     leftReading = analogRead(LDR1);
     rightReading = analogRead(LDR2);
     Serial.print(leftReading);
     Serial.print(",");
     Serial.println(rightReading);
+  if (go) {
+  
 
     int mil = millis();
 
-    if (leftReading >= blackThreshold && rightReading  >= blackThreshold && (mil - timeStep) > 600) {
+    if (leftReading >= blackThreshold && (mil - timeStep) > 600) {
       if (numberOfGates == 6)
         go = false;
       timeStep = mil;
       if (!alreadyTurning) {
         alreadyTurning = true;
-          turnWheel(-1);
+        turnWheel(-1);
       } else {
         alreadyTurning = false;
-          turnWheel(1);
+        turnWheel(1);
       }
       numberOfGates++;
     } else if (leftReading <= blackThreshold && rightReading  <= blackThreshold)
       turnFlag = false;
 
     digitalWrite(9, HIGH);
-    delay(20);
+    delay(10);
     digitalWrite(9, LOW);
-    delay(2);
+    delay(1);
 
   }
   if (IrReceiver.decode()) // have we received an IR signal?
@@ -102,6 +103,11 @@ void loop()
       turnWheel(1);
     } else if (IrReceiver.decodedIRData.decodedRawData == 4161273600) { // Down key
       turnWheel(-1);
+    }  else if (IrReceiver.decodedIRData.decodedRawData == 0xAD52FF00) {
+      numberOfGates == 0;
+      alreadyTurning = false;
+      turnFlag = false;
+      timeStep = -100;
     }
     IrReceiver.resume();
   }
